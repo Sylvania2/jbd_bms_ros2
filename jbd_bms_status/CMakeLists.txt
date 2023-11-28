@@ -1,21 +1,32 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 2.8.3)
 project(jbd_bms_status)
-add_compile_options(-std=c++17)
 
-find_package(serial REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(sensor_msgs REQUIRED)
-#find_package(message_generation REQUIRED)
-find_package(diagnostic_updater REQUIRED)
-find_package(jbd_bms_msg REQUIRED)
+add_compile_options(-std=c++11)
 
-include_directories(include)
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  serial
+  std_msgs
+  message_generation
+  jbd_bms_msg
+)
+
+catkin_package(
+#  INCLUDE_DIRS include
+#  LIBRARIES jbd_bms
+#  CATKIN_DEPENDS roscpp serial std_msgs
+#  DEPENDS system_lib
+)
+
+include_directories(
+  include
+  ${catkin_INCLUDE_DIRS}
+)
+
 add_executable(${PROJECT_NAME}_node src/jbd_bms_status_node.cpp src/jbd_bms_status.cpp)
-#ament_target_dependencies(rclcpp serial std_msgs message_genereation jbd_msg_msg)
-ament_target_dependencies(${PROJECT_NAME}_node rclcpp serial std_msgs sensor_msgs diagnostic_updater jbd_bms_msg)
-install(TARGETS
-  jbd_bms_status_node
-  DESTINATION lib/${PROJECT_NAME})
 
-ament_package()
+add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(${PROJECT_NAME}_node
+  ${catkin_LIBRARIES}
+)
