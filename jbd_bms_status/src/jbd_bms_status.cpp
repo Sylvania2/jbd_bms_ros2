@@ -8,12 +8,27 @@ const std::string error_info[14] = {
   "Charging Overcurrent Protection", "Discharge Overcurrent Protection", 
   "Short circuit protection", "Front-end IC error detection", "Software Lock-in MOS", "Unable to open port"};  
 
-iqr::JbdBmsStatus::JbdBmsStatus(ros::NodeHandle& nod) {
+//iqr::JbdBmsStatus::JbdBmsStatus(ros::NodeHandle& nod) {
+iqr::JbdBmsStatus::JbdBmsStatus(std::string nodename) :
+  Node("jbd_bms_status"),
+  diagnostic_updater_(this)
+{
   buffer_write_[0] = 0xDD;
   buffer_write_[1] = 0xA5;
   buffer_write_[3] = 0x00;
   buffer_write_[4] = 0xFF;
   buffer_write_[6] = 0x77;
+
+#if 1
+  declare_parameter("port", "jbd_bms");
+  declare_parameter("frame_id", "jbd_bms");
+  declare_parameter("looprate", 2);
+  declare_parameter("baudrate", 9600);
+  //path_name_ = get_name();
+  //position_ = get_namespace();
+  node_name_ = get_name();
+  jbd_pub_ = create_publisher< jbd_bms_msg::msg::JbdStatus >("jbd_bms", 1);
+#else
   nod.param<std::string>("port", port_, "jbd_bms");
   nod.param<std::string>("frame_id", frame_id_, "jbd_bms");
   nod.param<int>("looprate", looprate_, 2);
@@ -21,7 +36,8 @@ iqr::JbdBmsStatus::JbdBmsStatus(ros::NodeHandle& nod) {
   path_name_ = std::string(ros::this_node::getName()); 
   position_ = path_name_.rfind('/');
   node_name_ = path_name_.substr(position_+1); 
-  jbd_pub_ = nod.advertise<jbd_bms_msg::JbdStatus>("jbd_bms", 1); 
+  jbd_pub_ = nod.advertise<jbd_bms_msg::msg::JbdStatus>("jbd_bms", 1); 
+#endif
 
   diagnostic_updater_.setHardwareID("jbd_bms");
   diagnostic_updater_.add("BMS", this, &iqr::JbdBmsStatus::BMSDiagnostic);
@@ -33,33 +49,33 @@ void iqr::JbdBmsStatus::jbdCallback() {
 void iqr::JbdBmsStatus::BMSDiagnostic(diagnostic_updater::DiagnosticStatusWrapper& status) {
   boost::format key_format;
 
-  status.add("Voltage (V)", jbd_status_.Voltage);
-  status.add("Current (A)", jbd_status_.Current);
-  status.add("ResidualCapacity (mAh)", jbd_status_.ResidualCapacity);
-  status.add("DesignCapacity (mAh)", jbd_status_.DesignCapacity);
-  status.add("CycleIndex", jbd_status_.CycleIndex);
-  status.add("DataProduction", jbd_status_.DataProduction);
-  status.add("Version", jbd_status_.Version);
-  status.add("Rsoc (%)", jbd_status_.Rsoc);
+  status.add("Voltage (V)", jbd_status_.voltage);
+  status.add("Current (A)", jbd_status_.current);
+  status.add("ResidualCapacity (mAh)", jbd_status_.residual_capacity);
+  status.add("DesignCapacity (mAh)", jbd_status_.design_capacity);
+  status.add("CycleIndex", jbd_status_.cycle_index);
+  status.add("DataProduction", jbd_status_.data_production);
+  status.add("Version", jbd_status_.version);
+  status.add("Rsoc (%)", jbd_status_.rsoc);
 
-  status.add("CellNumber", jbd_status_.CellNumber);
-  for(int i=0; i<jbd_status_.CellNumber; i++) {
+  status.add("CellNumber", jbd_status_.cell_number);
+  for(int i=0; i<jbd_status_.cell_number; i++) {
     key_format = boost::format("Cell %1% voltage (V)") % i;
-    status.add(key_format.str(), jbd_status_.CellVoltage[i]);
+    status.add(key_format.str(), jbd_status_.cell_voltage[i]);
   }
 
-  status.add("NtcNumber", jbd_status_.NtcNumber);
-  for(int i=0; i<jbd_status_.NtcNumber; i++) {
+  status.add("NtcNumber", jbd_status_.ntc_number);
+  for(int i=0; i<jbd_status_.ntc_number; i++) {
     key_format = boost::format("Ntc %1% (℃)") % i;
-    status.add(key_format.str(), jbd_status_.NtcTem[i]);
+    status.add(key_format.str(), jbd_status_.ntc_tem[i]);
   }
 
   // ROS_INFO("motor %s", ToBinary(motor_status_[kLeftMotor].status, 1).c_str());
 
-  status.summary(diagnostic_msgs::DiagnosticStatus::OK, "OK");
+  status.summary(diagnostic_msgs::msg::DiagnosticStatus::OK, "OK");
 
-  for(int i=0; i<jbd_status_.ErrorInfo.size(); i++) {
-    status.mergeSummary(diagnostic_msgs::DiagnosticStatus::ERROR, jbd_status_.ErrorInfo[i]);
+  for(int i=0; i<jbd_status_.error_info.size(); i++) {
+    status.mergeSummary(diagnostic_msgs::msg::DiagnosticStatus::ERROR, jbd_status_.error_info[i]);
   }
   // if((motor_status_[kLeftMotor].status)&0x01 == 0x01) {
   //   status.mergeSummary(diagnostic_msgs::DiagnosticStatus::ERROR, "Amps Limit currently active");
@@ -87,7 +103,8 @@ void iqr::JbdBmsStatus::BMSDiagnostic(diagnostic_updater::DiagnosticStatusWrappe
 }
 
 bool iqr::JbdBmsStatus::initPort() {
-  ros::Rate loop_openport(0.2);
+  //ros::Rate loop_openport(0.2);
+  rclcpp::Rate loop_openport(0.2);
   while(!bms_ser_.isOpen()) {
     try{
       bms_ser_.setPort(port_);
@@ -95,19 +112,23 @@ bool iqr::JbdBmsStatus::initPort() {
       serial::Timeout t_out = serial::Timeout::simpleTimeout(1000);
       bms_ser_.setTimeout(t_out);
       bms_ser_.open();
-      ROS_INFO("[%s]Serial port initialized", node_name_.c_str());
+      //ROS_INFO("[%s]Serial port initialized", node_name_.c_str());
+      RCLCPP_INFO(get_logger(), "[%s]Serial port initialized", node_name_.c_str());
     }
     catch(serial::IOException& e) {
-      ROS_ERROR("[%s]Unable to open port, wait 5 secs and try again", node_name_.c_str());
+      //ROS_ERROR("[%s]Unable to open port, wait 5 secs and try again", node_name_.c_str());
+      RCLCPP_ERROR(get_logger(), "[%s]Unable to open port, wait 5 secs and try again", node_name_.c_str());
       dataParsing(buffer_all_, buffer_vol_);
       loop_openport.sleep();
     }        
   }
+  return true;
 }
 
 void iqr::JbdBmsStatus::dataParsing(std::vector<uint8_t>& buffer_read,std::vector<uint8_t>& buffer_vol) {
 
-  time_now_ = ros::Time::now();
+  //time_now_ = ros::Time::now();
+  time_now_ = get_clock()->now();
   if(buffer_read.size()!=0) {
     voltage_ = (buffer_read[4]<<8|buffer_read[5])/100.0;
     if(((buffer_read[6] & 0b10000000) >> 7) == 1) {
@@ -124,7 +145,7 @@ void iqr::JbdBmsStatus::dataParsing(std::vector<uint8_t>& buffer_read,std::vecto
     status_protect_ = (buffer_read[20]<<8|buffer_read[21]);
     version_ = buffer_read[22];
     rsoc_ = buffer_read[23];
-    mos_status_ = buffer_read[24];
+    statue_mos_ = buffer_read[24];
     cell_number_ = buffer_read[25];
     ntc_number_ = buffer_read[26];
     
@@ -140,28 +161,28 @@ void iqr::JbdBmsStatus::dataParsing(std::vector<uint8_t>& buffer_read,std::vecto
    
     jbd_status_.header.stamp = time_now_;
     jbd_status_.header.frame_id = frame_id_;
-    jbd_status_.Voltage = voltage_;
-    jbd_status_.Current = current_;
-    jbd_status_.ResidualCapacity = residual_capacity_;
-    jbd_status_.DesignCapacity = design_capacity_;
-    jbd_status_.CycleIndex = cycle_index_;
-    jbd_status_.DataProduction = data_production_string_;
-    jbd_status_.StatusBalance = status_balance_;
-    jbd_status_.StatusProtect = status_protect_;
-    jbd_status_.Version = version_;
-    jbd_status_.Rsoc = rsoc_;
-    jbd_status_.StatueMos = mos_status_;
-    jbd_status_.CellNumber = cell_number_;
-    jbd_status_.NtcNumber = ntc_number_;
+    jbd_status_.voltage = voltage_;
+    jbd_status_.current = current_;
+    jbd_status_.residual_capacity = residual_capacity_;
+    jbd_status_.design_capacity = design_capacity_;
+    jbd_status_.cycle_index = cycle_index_;
+    jbd_status_.data_production = data_production_string_;
+    jbd_status_.status_balance = status_balance_;
+    jbd_status_.status_protect = status_protect_;
+    jbd_status_.version = version_;
+    jbd_status_.rsoc = rsoc_;
+    jbd_status_.statue_mos = statue_mos_;
+    jbd_status_.cell_number = cell_number_;
+    jbd_status_.ntc_number = ntc_number_;
     
     for(int i = 0; i < ntc_number_; ++i) {
-      jbd_status_.NtcTem.push_back(ntf_data_[i]);
+      jbd_status_.ntc_tem.push_back(ntf_data_[i]);
     }
     
     for(int i = 0; i < 13; ++i) {
       if((status_protect_ & (0x0001>>i)>>i)==1) {
-        jbd_status_.ErrorId.push_back(i);
-        jbd_status_.ErrorInfo.push_back(error_info[i]);  
+        jbd_status_.error_id.push_back(i);
+        jbd_status_.error_info.push_back(error_info[i]);  
       }
     }
   }
@@ -170,33 +191,36 @@ void iqr::JbdBmsStatus::dataParsing(std::vector<uint8_t>& buffer_read,std::vecto
     cell_number_ = buffer_vol[3]/2;
     for(int i = 0; i < cell_number_*2; i+=2) {
       cell_[i/2] = (buffer_vol[4+i]<<8|buffer_vol[5+i])/1000.0;
-      jbd_status_.CellVoltage.push_back(cell_[i/2]);       
+      jbd_status_.cell_voltage.push_back(cell_[i/2]);       
     }   
   }
 
-  if(jbd_status_.CellVoltage.size()!=0 && jbd_status_.NtcTem.size()!=0) {
-    jbd_pub_.publish(jbd_status_);
+  if(jbd_status_.cell_voltage.size()!=0 && jbd_status_.ntc_tem.size()!=0) {
+    jbd_pub_->publish(jbd_status_);
   } else if(!bms_ser_.isOpen()) {
-    jbd_status_.ErrorId.push_back(13);
-    jbd_status_.ErrorInfo.push_back(error_info[13]);
-    jbd_pub_.publish(jbd_status_);
+    jbd_status_.error_id.push_back(13);
+    jbd_status_.error_info.push_back(error_info[13]);
+    jbd_pub_->publish(jbd_status_);
     // jbd_status_.ErrorId.clear();
     // jbd_status_.ErrorInfo.clear();
   }
 
   // update diagnostic data
-  diagnostic_updater_.update();
+  //diagnostic_updater_.update();
+  diagnostic_updater_.force_update();
 
-  for(int i=0; i<jbd_status_.ErrorInfo.size(); i++) {
-    ROS_ERROR("%s", jbd_status_.ErrorInfo[i].c_str());
+  for(int i=0; i<jbd_status_.error_info.size(); i++) {
+    RCLCPP_ERROR(get_logger(), "%s", jbd_status_.error_info[i].c_str());
+    //ROS_ERROR("%s", jbd_status_.ErrorInfo[i].c_str());
+    
   }
 
   buffer_vol_.clear();
   buffer_all_.clear();
-  jbd_status_.NtcTem.clear();
-  jbd_status_.CellVoltage.clear();
-  jbd_status_.ErrorId.clear();
-  jbd_status_.ErrorInfo.clear();
+  jbd_status_.ntc_tem.clear();
+  jbd_status_.cell_voltage.clear();
+  jbd_status_.error_id.clear();
+  jbd_status_.error_info.clear();
 }
 
 std::vector<uint8_t> iqr::JbdBmsStatus::dataRead(uint8_t date_type, uint8_t checksum_write, uint16_t buffer_sum, uint16_t checksum_read, std::vector<uint8_t> buffer) {
@@ -205,7 +229,8 @@ std::vector<uint8_t> iqr::JbdBmsStatus::dataRead(uint8_t date_type, uint8_t chec
   buffer_write_[5] = checksum_write;
   try{
     bms_ser_.write(buffer_write_,7); 
-    ros::Duration(0.1).sleep();
+    //ros::Duration(0.1).sleep();
+    rclcpp::sleep_for(100ms);
     if(bms_ser_.available()) {   
       bms_ser_.read(buffer, bms_ser_.available());
       while(!findpack) {
