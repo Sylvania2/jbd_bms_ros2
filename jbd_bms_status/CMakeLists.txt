@@ -16,6 +16,11 @@ add_executable(${PROJECT_NAME}_node src/jbd_bms_status_node.cpp src/jbd_bms_stat
 ament_target_dependencies(${PROJECT_NAME}_node rclcpp serial std_msgs sensor_msgs diagnostic_updater jbd_bms_msg)
 install(TARGETS
   jbd_bms_status_node
-  DESTINATION lib/${PROJECT_NAME})
+  DESTINATION lib/${PROJECT_NAME}
+  )
+install(DIRECTORY
+  launch
+  DESTINATION share/${PROJECT_NAME}/
+  )
 
 ament_package()

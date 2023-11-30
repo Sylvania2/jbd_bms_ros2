@@ -10,8 +10,8 @@ Jbd Power Lithium Battery\
 ![](https://github.com/I-Quotient-Robotics/jbd_bms_ros/blob/master/type_pic/60348685.jpg)
 
 ## Environment
-Ubuntu16.04\
-ROS-kinetic
+Ubuntu22.04\
+ROS2-Humble
 ## Nodes
 ### jbd_bms_status
 jbd_bms_status is a driver for jbd_bms. It reads battery info convert to JbdStatus message.
@@ -32,8 +32,8 @@ jbd_id(string, default: jbd_bms)\
 frame ID for the device.\
 ## install
 ```bash
-git clone https://github.com/I-Quotient-Robotics/iqr_jbd_bms
-cd iqr_jbd_bms
+git clone git@github.com:Futu-reADS/jbd_bms_ros.git
+cd battery
 rosdep install jbd_bms_driver --ignore-src
 rosdep install jbd_bms_msg
 ```
@@ -45,8 +45,6 @@ sudo udevadm control--reload-rules && udevadm trigger
 ## run
 ```bash
 cd workspace
-catkin_make
-source /devel/setup.bash
 roslaunch jbd_bms_bringup jbd_bms_status.launch
 ```
 ## Official website
