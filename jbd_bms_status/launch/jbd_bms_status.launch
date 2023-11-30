@@ -1,9 +1,9 @@
 <launch>
-  <node pkg="jbd_bms_status" type="jbd_bms_status_node" name="jbd_bms_status_node" output="screen">
-    <param name="port" value="/dev/jbd_bms" type="string" />
-    <param name="frame_id" value="jbd_bms" type="string" />
-    <param name="baudrate" value="9600" type="int"/>
-    <param name="looprate" value="1" type="int"/>
+  <node pkg="jbd_bms_status" exec="jbd_bms_status_node" name="jbd_bms_status_node" output="screen">
+    <param name="port" value="/dev/jbd_bms" />
+    <param name="frame_id" value="jbd_bms" />
+    <param name="baudrate" value="9600" />
+    <param name="looprate" value="1" />
     <remap from="/jbd_bms_status/jbd_bms" to="/bms"/>
   </node>
 </launch>
