@@ -106,7 +106,11 @@ bool iqr::JbdBmsStatus::initPort() {
   //ros::Rate loop_openport(0.2);
   rclcpp::Rate loop_openport(0.2);
   while(!bms_ser_.isOpen()) {
+    RCLCPP_INFO(get_logger(), "%s:%d [%s] port_:%s baudrate_:%d",
+		__FILE__, __LINE__, node_name_.c_str(), port_.c_str(), baudrate_);
     try{
+      RCLCPP_INFO(get_logger(), "%s:%d [%s]port_:%s baudrate_:%d",
+		  __FILE__, __LINE__, node_name_.c_str(), port_.c_str(), baudrate_);
       bms_ser_.setPort(port_);
       bms_ser_.setBaudrate(baudrate_);
       serial::Timeout t_out = serial::Timeout::simpleTimeout(1000);
@@ -116,6 +120,8 @@ bool iqr::JbdBmsStatus::initPort() {
       RCLCPP_INFO(get_logger(), "[%s]Serial port initialized", node_name_.c_str());
     }
     catch(serial::IOException& e) {
+      RCLCPP_INFO(get_logger(), "%s:%d [%s]port_:%s baudrate_:%d",
+		  __FILE__, __LINE__, node_name_.c_str(), port_.c_str(), baudrate_);
       //ROS_ERROR("[%s]Unable to open port, wait 5 secs and try again", node_name_.c_str());
       RCLCPP_ERROR(get_logger(), "[%s]Unable to open port, wait 5 secs and try again", node_name_.c_str());
       dataParsing(buffer_all_, buffer_vol_);
