@@ -20,10 +20,10 @@ iqr::JbdBmsStatus::JbdBmsStatus(std::string nodename) :
   buffer_write_[6] = 0x77;
 
 #if 1
-  declare_parameter("port", "jbd_bms");
-  declare_parameter("frame_id", "jbd_bms");
-  declare_parameter("looprate", 2);
-  declare_parameter("baudrate", 9600);
+  port_ = declare_parameter<std::string>("port", "jbd_bms");
+  frame_id_ = declare_parameter<std::string>("frame_id", "jbd_bms");
+  looprate_ = declare_parameter<int>("looprate", 2);
+  baudrate_ = declare_parameter<int>("baudrate", 9600);
   //path_name_ = get_name();
   //position_ = get_namespace();
   node_name_ = get_name();
