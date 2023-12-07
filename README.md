@@ -81,7 +81,9 @@ string[] error_info       # Array of error messages corresponding to error_id
 
 ##### Error ID
 
-| error_id | description                  |
+Note: `error_id` in `jbd_bms_msg/JbdStatus` is a variable array of error ID's. Length of `error_id` becomes 0 when no error is detected.
+
+| error_id | description               |
 |----------|------------------------------|
 | 0        | Cell Overvoltage             |
 | 1        | Cell Undervoltage            |
@@ -98,7 +100,6 @@ string[] error_info       # Array of error messages corresponding to error_id
 | 12       | MosFET software lock-in      |
 | 13       | Communication error          |
 
-Note: Length of `error_id` becomes 0 when no error is detected
 
 
 ### `/diagnostics`
