@@ -8,7 +8,7 @@ This ROS2 package reads Li-ion battery-related information returned by Jiabaida 
 
 The package publishes battery information such as SOC (State-Of-Charge) and error ID,
 so that the main controller node can notice Low Voltage, High Temperature or any abnormality of Li-ion battery
-and modify behaviour accordingly.
+and modify the control behaviour accordingly.
 
 The package supports varying models of battery pack with differing number of cells or temperature sensors.
 
