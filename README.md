@@ -18,18 +18,36 @@ Ubuntu22.04\
 ROS2-Humble
 
 ## Nodes
+
 ### jbd\_bms\_status
 jbd\_bms\_status is a driver for jbd\_bms. It reads battery info convert to JbdStatus message.
 
-#### Published Topics
+#### Parameters
+port\_bms(string, default: /dev/port\_link\_bms)\
+serial port name used in your system.\
+\
+baudrate\_bms(int, default: 9600)\
+serial port baud rate.\
+\
+looprate\_bms(int, default: 2)\
+loop rate.\
+\
+jbd\_id(string, default: jbd\_bms)\
+frame ID for the device.\
 
-#####  /jbd\_status
+## Topics
+
+- `/jbd_bms`
+- `/diagnostics`
+
+
+##  /jbd\_bms
 
 State of battery sent from Jiabaida BMS.
 
 Type: `jbd_bms_msg/JbdStatus`
 
-###### Definition of `jbd_bms_msg/JbdStatus`
+### Definition of `jbd_bms_msg/JbdStatus`
 
 ```
 std_msgs/Header header    # Header
@@ -74,23 +92,9 @@ string[] error_info       # Array of error messages corresponding to error_id
 Note: Length of `error_id` becomes 0 when no error is detected
 
 
-##### /diagnostics
+## /diagnostics
 
 Diagnostics from Jiabaida BMS. Many human-readable messages on battery state.
-
-
-#### Parameters
-port\_bms(string, default: /dev/port\_link\_bms)\
-serial port name used in your system.\
-\
-baudrate\_bms(int, default: 9600)\
-serial port baud rate.\
-\
-looprate\_bms(int, default: 2)\
-loop rate.\
-\
-jbd\_id(string, default: jbd\_bms)\
-frame ID for the device.\
 
 
 ## Build & Install
