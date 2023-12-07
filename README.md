@@ -96,7 +96,7 @@ frame ID for the device.\
 Execute following command to build and install the package.
 
 ```bash
-cd ~/workspace/src
+cd _workspace_/src
 git clone git@github.com:Futu-reADS/jbd_bms_ros.git
 cd ..
 colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
@@ -104,13 +104,13 @@ colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
 
 ## Udev rule
 
-Prepared a udev rule file to fix the path to tty device node correspondign to UART adaptoor for Jiabaida BMS:
+Udev rule file for USB-UART adaptor connecting to Jiabaida BMS:
 
 ```
 KERNEL=="ttyUSB[0-9]",ATTRS{idVendor}=="10c4",ATTRS{idProduct}=="ea60",MODE:="0777",SYMLINK+="jbd_bms"
 ```
 
-To install udev rule:
+To install the udev rule:
 
 ```bash
 sudo cp jbd_bms_driver/udev/10-jbd-bms.rules /etc/udev/rules.d/ or /lib/udec/rules.d
@@ -121,7 +121,7 @@ sudo udevadm control--reload-rules && udevadm trigger
 
 
 ```bash
-cd workspace
+cd _workspace_
 ros2 launch jbd_bms_status jbd_bms_status_launch.xml
 ```
 
