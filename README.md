@@ -41,13 +41,13 @@ frame ID for the device.\
 - `/diagnostics`
 
 
-##  /jbd\_bms
+###  `/jbd_bms`
 
 State of battery sent from Jiabaida BMS.
 
 Type: `jbd_bms_msg/JbdStatus`
 
-### Definition of `jbd_bms_msg/JbdStatus`
+#### `jbd_bms_msg/JbdStatus`
 
 ```
 std_msgs/Header header    # Header
@@ -70,7 +70,7 @@ int64[] error_id          # Array of error id's collected from Protection Status
 string[] error_info       # Array of error messages corresponding to error_id
 ```
 
-###### Error ID
+##### Error ID
 
 | error_id | description                  |
 |----------|------------------------------|
@@ -92,7 +92,7 @@ string[] error_info       # Array of error messages corresponding to error_id
 Note: Length of `error_id` becomes 0 when no error is detected
 
 
-## /diagnostics
+### `/diagnostics`
 
 Diagnostics from Jiabaida BMS. Many human-readable messages on battery state.
 
