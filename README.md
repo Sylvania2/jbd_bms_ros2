@@ -33,7 +33,7 @@ A ROS2 driver for battery management system from Jiabaida in China. It reads bat
 #### Parameters
 
 - `port` (type: `string`, default: `jbd_bms`)
-    - Path to device file corresponding to USB-UART adapter connecting to Jiabaida BMS
+    - Path of device file corresponding to the USB-UART adapter connecting to Jiabaida BMS
 
 - `baudrate` (type: `int`, default: `9600`)
     - Baudrate for UART communication to Jiabaida BMS
