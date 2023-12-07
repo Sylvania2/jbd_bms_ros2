@@ -1,34 +1,39 @@
 #include "jbd_bms_status.h"
 
+// Error messages output to /diagnostic
 const std::string error_info[14] = {
-  "Monomer Overvoltage Protection", "Single undervoltage protection",
-  "Overvoltage protection of whole group", "Overall undervoltage protection", 
-  "Charging Overtemperature Protection", "Charging cryogenic protection", 
-  "Discharge Overtemperature Protection", "Discharge cryogenic protection", 
-  "Charging Overcurrent Protection", "Discharge Overcurrent Protection", 
-  "Short circuit protection", "Front-end IC error detection", "Software Lock-in MOS", "Unable to open port"};  
+  // Messages for protection status 
+  "Cell Overvoltage Protection", "Cell Undervoltage Protection",
+  "Pack Overvoltage Protection", "Pack Undervoltage Protection", 
+  "Overtemperature Protection while Charging", "Cryogenic Protection while Charging", 
+  "Overtemperature Protection while Discharging", "Cryogenic Protection while Discharging", 
+  "Overcurrent Protection while Charging", "Overcurrent Protection while Discharging", 
+  "Short Circuit Protection", "Front-end IC Error", "MosFET Software Lock-in",
+  // Generic communication error
+  "Unable to Open Port"
+};  
 
 //iqr::JbdBmsStatus::JbdBmsStatus(ros::NodeHandle& nod) {
 iqr::JbdBmsStatus::JbdBmsStatus(std::string nodename) :
   Node("jbd_bms_status"),
   diagnostic_updater_(this)
 {
-  buffer_write_[0] = 0xDD;
-  buffer_write_[1] = 0xA5;
-  buffer_write_[3] = 0x00;
-  buffer_write_[4] = 0xFF;
-  buffer_write_[6] = 0x77;
+  buffer_write_[0] = 0xDD;    // start byte
+  buffer_write_[1] = 0xA5;    // mode (read data from BMS)
+  buffer_write_[3] = 0x00;    // data length
+  buffer_write_[4] = 0xFF;    // check sum   ((sum of data bytes) - 1) & 0xff
+  buffer_write_[6] = 0x77;    // stop byte
 
 #if 1
+  // ROS2 node parameter definition
   port_ = declare_parameter<std::string>("port", "jbd_bms");
   frame_id_ = declare_parameter<std::string>("frame_id", "jbd_bms");
   looprate_ = declare_parameter<int>("looprate", 2);
   baudrate_ = declare_parameter<int>("baudrate", 9600);
-  //path_name_ = get_name();
-  //position_ = get_namespace();
   node_name_ = get_name();
   jbd_pub_ = create_publisher< jbd_bms_msg::msg::JbdStatus >("jbd_bms", 1);
 #else
+  // ROS1
   nod.param<std::string>("port", port_, "jbd_bms");
   nod.param<std::string>("frame_id", frame_id_, "jbd_bms");
   nod.param<int>("looprate", looprate_, 2);
@@ -54,7 +59,7 @@ void iqr::JbdBmsStatus::BMSDiagnostic(diagnostic_updater::DiagnosticStatusWrappe
   status.add("ResidualCapacity (mAh)", jbd_status_.residual_capacity);
   status.add("DesignCapacity (mAh)", jbd_status_.design_capacity);
   status.add("CycleIndex", jbd_status_.cycle_index);
-  status.add("DataProduction", jbd_status_.data_production);
+  status.add("DateProduction", jbd_status_.date_production);
   status.add("Version", jbd_status_.version);
   status.add("Rsoc (%)", jbd_status_.rsoc);
 
@@ -146,12 +151,12 @@ void iqr::JbdBmsStatus::dataParsing(std::vector<uint8_t>& buffer_read,std::vecto
     residual_capacity_ = (buffer_read[8]<<8|buffer_read[9])*10;
     design_capacity_ = (buffer_read[10]<<8|buffer_read[11])*10;
     cycle_index_ = (buffer_read[12]<<8|buffer_read[13]);
-    data_production_int_ = (buffer_read[14]<<8|buffer_read[15]);
+    date_production_int_ = (buffer_read[14]<<8|buffer_read[15]);
     status_balance_ = (buffer_read[16]<<8|buffer_read[17]|buffer_read[18]<<8|buffer_read[19]);
     status_protect_ = (buffer_read[20]<<8|buffer_read[21]);
     version_ = buffer_read[22];
     rsoc_ = buffer_read[23];
-    statue_mos_ = buffer_read[24];
+    status_mos_ = buffer_read[24];
     cell_number_ = buffer_read[25];
     ntc_number_ = buffer_read[26];
     
@@ -159,10 +164,10 @@ void iqr::JbdBmsStatus::dataParsing(std::vector<uint8_t>& buffer_read,std::vecto
       ntf_data_[i/2] = ((buffer_read[27+i]<<8|buffer_read[28+i])-2731)/10.0;
     }
     
-    day_production_ = (data_production_int_&0x1f);
-    month_production_ = ((data_production_int_>>5)&0x0f);
-    year_production_ = (2000+ (data_production_int_>>9));
-    data_production_string_ = (boost::format("%04d-%02d-%02d") % year_production_ % month_production_% 
+    day_production_ = (date_production_int_&0x1f);
+    month_production_ = ((date_production_int_>>5)&0x0f);
+    year_production_ = (2000+ (date_production_int_>>9));
+    date_production_string_ = (boost::format("%04d-%02d-%02d") % year_production_ % month_production_% 
         day_production_).str();
    
     jbd_status_.header.stamp = time_now_;
@@ -172,12 +177,12 @@ void iqr::JbdBmsStatus::dataParsing(std::vector<uint8_t>& buffer_read,std::vecto
     jbd_status_.residual_capacity = residual_capacity_;
     jbd_status_.design_capacity = design_capacity_;
     jbd_status_.cycle_index = cycle_index_;
-    jbd_status_.data_production = data_production_string_;
+    jbd_status_.date_production = date_production_string_;
     jbd_status_.status_balance = status_balance_;
     jbd_status_.status_protect = status_protect_;
     jbd_status_.version = version_;
     jbd_status_.rsoc = rsoc_;
-    jbd_status_.statue_mos = statue_mos_;
+    jbd_status_.status_mos = status_mos_;
     jbd_status_.cell_number = cell_number_;
     jbd_status_.ntc_number = ntc_number_;
     
@@ -185,8 +190,8 @@ void iqr::JbdBmsStatus::dataParsing(std::vector<uint8_t>& buffer_read,std::vecto
       jbd_status_.ntc_tem.push_back(ntf_data_[i]);
     }
     
-    for(int i = 0; i < 13; ++i) {
-      if((status_protect_ & (0x0001>>i)>>i)==1) {
+    for(int i = 0; i < 13; ++i) {   
+      if((status_protect_ & (0x0001<<i)>>i)==1) {
         jbd_status_.error_id.push_back(i);
         jbd_status_.error_info.push_back(error_info[i]);  
       }
@@ -255,13 +260,13 @@ std::vector<uint8_t> iqr::JbdBmsStatus::dataRead(uint8_t date_type, uint8_t chec
       }
     }
   }
-    catch(serial::SerialException& e) {
-      bms_ser_.close();
-      initPort();
-    }
-    catch(serial::IOException& e) {
-      bms_ser_.close();
-      initPort();
-    }        
+  catch(serial::SerialException& e) {
+    bms_ser_.close();
+    initPort();
+  }
+  catch(serial::IOException& e) {
+    bms_ser_.close();
+    initPort();
+  }        
   return buffer;
 }

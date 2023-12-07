@@ -15,8 +15,8 @@ int32 design_capacity
 # CycleIndex
 int16 cycle_index
 
-# DataProduction
-string data_production
+# DateProduction
+string date_production
 
 # StatusBalance
 uint32 status_balance
@@ -30,8 +30,8 @@ uint16 version
 # Rsoc
 int16 rsoc
 
-# StatueMos
-int16 statue_mos
+# StatusMos
+int16 status_mos
 
 # CellNumber
 int16 cell_number

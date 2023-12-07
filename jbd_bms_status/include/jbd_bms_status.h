@@ -44,14 +44,14 @@ namespace iqr {
     std::vector<int> error_id_;
     rclcpp::Publisher<jbd_bms_msg::msg::JbdStatus>::SharedPtr jbd_pub_;
     //ros::Publisher jbd_pub_;
-    std::string port_, frame_id_, data_production_string_, path_name_, node_name_; 
+    std::string port_, frame_id_, date_production_string_, /* path_name_, */ node_name_; 
     float ntf_data_[10], cell_[30];
     float voltage_, current_;
     uint8_t buffer_write_[7];
-    uint16_t data_production_int_, status_protect_, version_, statue_mos_;
+    uint16_t date_production_int_, status_protect_, version_, status_mos_;
     uint32_t status_balance_;
     int baudrate_, cell_number_, residual_capacity_, design_capacity_, cycle_index_, rsoc_,
-      ntc_, ntc_number_, day_production_, month_production_, year_production_, position_;
+      ntc_, ntc_number_, day_production_, month_production_, year_production_; /*position_; */
 
     // diagnostic  update
     diagnostic_updater::Updater diagnostic_updater_;
