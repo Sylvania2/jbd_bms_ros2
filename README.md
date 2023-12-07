@@ -99,14 +99,14 @@ Diagnostics from Jiabaida BMS. Many human-readable messages on battery state.
 
 ## Build & Install
 
-Execute following command to build and install the package.
+Execute following commandS to build and install the package.
 
-```bash
-cd _workspace_/src
+<pre>
+cd <i>your-workspace</i>/<i>your-source-directory</i>
 git clone git@github.com:Futu-reADS/jbd_bms_ros.git
-cd ..
+cd <i>your-workspace</i>
 colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
-```
+</pre>
 
 ## Udev rule
 
@@ -126,10 +126,10 @@ sudo udevadm control--reload-rules && udevadm trigger
 ## Run
 
 
-```bash
-cd _workspace_
+<pre>
+cd <i>your-workspace</i>
 ros2 launch jbd_bms_status jbd_bms_status_launch.xml
-```
+</pre>
 
 
 ## Official website
