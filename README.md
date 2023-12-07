@@ -1,47 +1,52 @@
 # jbd\_bms\_ros
 
-### Battery Management System BMS by Jiabaida
+### ROS node for Battery Management System by Jiabaida
 
 ## Overview
 This ROS2 package reads battery-related information returned by BMS and publishes it as topics.
 You can configure serial port name, baudrate and loop rate from outside.
-Number of battery cells and temperature sensors are not fixed.
+Number of battery cells and temperature sensors are not fixed, therefore 
+the package supports variety of battery packes with differing number of cells.
 You can also get the error bits of information and the error content.
 
 ## Equipment Type
+
 Jbd Power Lithium Battery\
 ![](https://github.com/I-Quotient-Robotics/jbd_bms_ros/blob/master/type_pic/144283718.jpg)
 ![](https://github.com/I-Quotient-Robotics/jbd_bms_ros/blob/master/type_pic/60348685.jpg)
 
 ## Environment
-Ubuntu22.04\
-ROS2-Humble
+
+- Ubuntu 22.04
+- ROS2 Humble
 
 ## Nodes
 
-### jbd\_bms\_status
-jbd\_bms\_status is a driver for jbd\_bms. It reads battery info convert to JbdStatus message.
+### `jbd_bms_status`
+
+A ROS2 driver for battery management system from Jiabaida in China. It reads battery information and converts it to ROS2 topics.
 
 #### Parameters
-port\_bms(string, default: /dev/port\_link\_bms)\
-serial port name used in your system.\
-\
-baudrate\_bms(int, default: 9600)\
-serial port baud rate.\
-\
-looprate\_bms(int, default: 2)\
-loop rate.\
-\
-jbd\_id(string, default: jbd\_bms)\
-frame ID for the device.\
+
+- `port` (type: `string`, default: `jbd_bms`)
+    - Path to device file corresponding to USB-UART adapter connecting to Jiabaida BMS
+
+- `baudrate` (type: `int`, default: `9600`)
+    - Baudrate for UART communication to Jiabaida BMS
+
+- `loop_rate` (type: `int`, default: `2`)
+    - Topic output rate [Hz]
+
+- `frame_id` (type: `string`, default: `jbd_bms`)
+    - Used in header of `jbd_bms`
 
 ## Topics
 
-- `/jbd_bms`
-- `/diagnostics`
+- `jbd_bms`
+- `diagnostics`
 
 
-###  `/jbd_bms`
+###  `jbd_bms`
 
 State of battery sent from Jiabaida BMS.
 
