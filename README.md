@@ -50,8 +50,7 @@ int64[] error_id          # Array of error id's collected from Protection Status
 string[] error_info       # Array of error messages corresponding to error_id
 ```
 
-Error ID
---------
+###### Error ID
 
 | error_id | description                  |
 |----------|------------------------------|
@@ -97,9 +96,9 @@ frame ID for the device.\
 Execute following command to build and install the package.
 
 ```bash
-cd workspace/src
+cd ~/workspace/src
 git clone git@github.com:Futu-reADS/jbd_bms_ros.git
-cd workspace
+cd ..
 colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
 ```
 
