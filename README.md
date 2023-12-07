@@ -27,7 +27,9 @@ jbd\_bms\_status is a driver for jbd\_bms. It reads battery info convert to JbdS
 
 State of battery sent from Jiabaida BMS.
 
-Type: jbd\_bms\_msg/JbdStatus
+Type: `jbd_bms_msg/JbdStatus`
+
+##### Definition of `jbd_bms_msg/JbdStatus`
 
 ```
 std_msgs/Header header    # Header
@@ -74,8 +76,7 @@ Note: Length of `error_id` becomes 0 when no error is detected
 
 ##### /diagnostics
 
-Diagnostics from Jiabaida BMS.
-Many human-readable messages on battery state are available by executing `ros2 topic echo /diagnostics`.
+Diagnostics from Jiabaida BMS. Many human-readable messages on battery state.
 
 
 #### Parameters
@@ -90,6 +91,7 @@ loop rate.\
 \
 jbd\_id(string, default: jbd\_bms)\
 frame ID for the device.\
+
 
 ## Build & Install
 
