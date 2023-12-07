@@ -29,7 +29,7 @@ State of battery sent from Jiabaida BMS.
 
 Type: `jbd_bms_msg/JbdStatus`
 
-##### Definition of `jbd_bms_msg/JbdStatus`
+###### Definition of `jbd_bms_msg/JbdStatus`
 
 ```
 std_msgs/Header header    # Header
