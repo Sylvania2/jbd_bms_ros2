@@ -254,11 +254,17 @@ std::vector<uint8_t> iqr::JbdBmsStatus::dataRead(uint8_t date_type, uint8_t chec
           buffer_sum = ~buffer_sum + 1;
           if(buffer_sum==checksum_read) {
             findpack = true;
+	    RCLCPP_INFO(get_logger(), "%s", "Checksum True");
+	  }else{ 
+            RCLCPP_INFO(get_logger(), "%s", "Checksum False");
+	    buffer.clear();
+	    findpack = true;
           }
         }
         index += 1;
       }
     }
+    buffer_sum = 0;
   }
   catch(serial::SerialException& e) {
     bms_ser_.close();
