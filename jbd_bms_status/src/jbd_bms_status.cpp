@@ -191,7 +191,7 @@ void iqr::JbdBmsStatus::dataParsing(std::vector<uint8_t>& buffer_read,std::vecto
     }
     
     for(int i = 0; i < 13; ++i) {   
-      if((status_protect_ & (0x0001<<i)>>i)==1) {
+      if((status_protect_ & (0x0001<<i)) > 0 ) {
         jbd_status_.error_id.push_back(i);
         jbd_status_.error_info.push_back(error_info[i]);  
       }
